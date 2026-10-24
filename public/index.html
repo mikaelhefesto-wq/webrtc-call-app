@@ -3,58 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WebRTC Call & Screen Share - Tempo Real</title>
-  <!-- Tailwind CSS CDN -->
+  <title>Nexus Call - WebRTC Video, Tela & Foco</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    video {
-      transform: scaleX(-1);
-    }
-    video.no-mirror {
-      transform: scaleX(1);
-    }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: rgba(100, 116, 139, 0.4);
-      border-radius: 9999px;
-    }
-    .pulse-ring {
-      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
-      animation: pulse-ring 2s infinite cubic-bezier(0.66, 0, 0, 1);
-    }
-    @keyframes pulse-ring {
-      to { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+    video { transform: scaleX(-1); }
+    video.no-mirror { transform: scaleX(1); }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.4); border-radius: 9999px; }
+    .speaking-ring {
+      box-shadow: 0 0 0 3px #10b981, 0 0 15px rgba(16, 185, 129, 0.6);
+      transition: box-shadow 0.15s ease-in-out;
     }
   </style>
 </head>
 <body class="h-full flex flex-col font-sans select-none overflow-hidden">
 
   <!-- ================= TELA 1: LOBBY ================= -->
-  <div id="lobbyScreen" class="flex-1 flex flex-col items-center justify-center p-4 relative z-10">
+  <div id="lobbyScreen" class="flex-1 flex flex-col items-center justify-center p-4 relative z-10 overflow-y-auto custom-scrollbar">
     <div class="absolute inset-0 bg-gradient-to-tr from-indigo-950/40 via-slate-950 to-emerald-950/30 -z-10 pointer-events-none"></div>
 
-    <div class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
-      <div class="flex items-center gap-3 mb-6">
+    <div class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl my-auto">
+      <div class="flex items-center gap-3 mb-5">
         <div class="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
           <i data-lucide="video" class="w-6 h-6"></i>
         </div>
         <div>
           <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            Nexus Call <span class="text-xs bg-indigo-500/20 text-indigo-300 font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">WebRTC P2P</span>
+            Nexus Call <span class="text-xs bg-indigo-500/20 text-indigo-300 font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">Pro WebRTC</span>
           </h1>
-          <p class="text-xs text-slate-400">Vídeo, áudio e transmissão de tela sem limites</p>
+          <p class="text-xs text-slate-400">Cancelamento de ruído, modo foco e PIN</p>
         </div>
       </div>
 
       <!-- Preview da Câmera no Lobby -->
-      <div class="relative w-full aspect-video bg-slate-950 rounded-2xl overflow-hidden mb-6 border border-slate-800 shadow-inner group">
+      <div class="relative w-full aspect-video bg-slate-950 rounded-2xl overflow-hidden mb-5 border border-slate-800 shadow-inner group">
         <video id="lobbyPreviewVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
         <div id="lobbyPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 text-slate-500">
           <i data-lucide="camera-off" class="w-10 h-10 mb-2 stroke-1"></i>
@@ -72,9 +56,9 @@
       </div>
 
       <!-- Formulário de Entrada -->
-      <form id="joinForm" class="space-y-4">
+      <form id="joinForm" class="space-y-3.5">
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5" for="roomInput">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1" for="roomInput">
             Nome da Sala
           </label>
           <div class="relative">
@@ -85,14 +69,14 @@
               id="roomInput" 
               type="text" 
               required 
-              placeholder="ex: reuniao-de-equipe" 
+              placeholder="ex: amigos-da-resenha" 
               class="w-full pl-10 pr-4 py-2.5 bg-slate-950/60 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5" for="nameInput">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1" for="nameInput">
             Seu Nome ou Apelido
           </label>
           <div class="relative">
@@ -103,10 +87,33 @@
               id="nameInput" 
               type="text" 
               required 
-              placeholder="ex: Carlos Silva" 
+              placeholder="ex: Mikael ou Anderson" 
               class="w-full pl-10 pr-4 py-2.5 bg-slate-950/60 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1" for="pinInput">
+            Senha / PIN da Sala <span class="text-slate-500 font-normal lowercase">(opcional)</span>
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <i data-lucide="lock" class="w-4 h-4"></i>
+            </div>
+            <input 
+              id="pinInput" 
+              type="password" 
+              placeholder="Digite um PIN (se a sala exigir)" 
+              class="w-full pl-10 pr-4 py-2.5 bg-slate-950/60 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+          </div>
+          <p class="text-[10px] text-slate-500 mt-1">Se a sala for nova, esse PIN será cadastrado como a senha dela.</p>
+        </div>
+
+        <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2 text-xs text-emerald-300">
+          <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+          <span>Cancelamento de Ruído + Supressão de Eco ativados automaticamente.</span>
         </div>
 
         <button 
@@ -124,13 +131,16 @@
   <!-- ================= TELA 2: SALA DE CHAMADA ================= -->
   <div id="callScreen" class="hidden flex-1 flex flex-col h-full bg-slate-950 overflow-hidden relative">
     
-    <header class="h-16 px-4 md:px-6 bg-slate-900/80 border-b border-slate-800/80 flex items-center justify-between backdrop-blur-md z-20">
+    <header class="h-16 px-4 md:px-6 bg-slate-900/80 border-b border-slate-800/80 flex items-center justify-between backdrop-blur-md z-20 shrink-0">
       <div class="flex items-center gap-3">
-        <div class="w-3 h-3 rounded-full bg-emerald-500 pulse-ring"></div>
+        <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
         <div>
           <div class="flex items-center gap-2">
-            <h2 id="activeRoomName" class="font-bold text-sm md:text-base text-white tracking-wide">sala</h2>
-            <button id="copyRoomBtn" title="Copiar link da sala" class="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800 transition">
+            <h2 id="activeRoomName" class="font-bold text-sm md:text-base text-white tracking-wide">#sala</h2>
+            <span id="roomPinBadge" class="hidden text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 font-medium">
+              <i data-lucide="lock" class="w-3 h-3"></i> Protegida por PIN
+            </span>
+            <button id="copyRoomBtn" title="Copiar link direto de convite" class="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800 transition">
               <i data-lucide="copy" class="w-3.5 h-3.5"></i>
             </button>
           </div>
@@ -138,19 +148,31 @@
         </div>
       </div>
 
-      <button id="toggleChatBtn" class="relative p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center gap-2 text-xs font-medium">
-        <i data-lucide="message-square" class="w-4 h-4"></i>
-        <span class="hidden sm:inline">Chat</span>
-        <span id="unreadBadge" class="hidden absolute -top-1 -right-1 w-4 h-4 rounded-full bg-indigo-500 text-[10px] text-white flex items-center justify-center font-bold">1</span>
-      </button>
+      <!-- Alternador de Layout Grade vs Foco -->
+      <div class="flex items-center gap-2">
+        <button 
+          id="toggleLayoutBtn" 
+          title="Alternar entre Grade e Modo Foco (Spotlight)" 
+          class="p-2 sm:px-3 sm:py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center gap-1.5 text-xs font-medium"
+        >
+          <i data-lucide="layout-dashboard" class="w-4 h-4" id="layoutIcon"></i>
+          <span class="hidden sm:inline" id="layoutText">Modo Foco</span>
+        </button>
+
+        <button id="toggleChatBtn" class="relative p-2 sm:px-3 sm:py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center gap-2 text-xs font-medium">
+          <i data-lucide="message-square" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Chat</span>
+          <span id="unreadBadge" class="hidden absolute -top-1 -right-1 w-4 h-4 rounded-full bg-indigo-500 text-[10px] text-white flex items-center justify-center font-bold">1</span>
+        </button>
+      </div>
     </header>
 
     <div class="flex-1 flex overflow-hidden relative">
-      <main class="flex-1 p-3 md:p-6 overflow-y-auto custom-scrollbar flex items-center justify-center">
-        <div id="videoGrid" class="w-full h-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 items-center justify-center auto-rows-fr">
-          
-          <!-- Box do Vídeo Local -->
-          <div id="localVideoContainer" class="relative w-full h-full min-h-[220px] max-h-[75vh] bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl flex items-center justify-center">
+      <main id="videoStage" class="flex-1 p-3 md:p-6 overflow-hidden flex flex-col items-center justify-center">
+
+        <!-- MODO GRADE -->
+        <div id="videoGrid" class="w-full h-full max-w-7xl mx-auto grid gap-4 items-center justify-center auto-rows-fr">
+          <div id="localCard" class="relative w-full h-full min-h-[220px] max-h-[75vh] bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl flex items-center justify-center group transition-all duration-300">
             <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
             
             <div id="localPlaceholder" class="hidden absolute inset-0 bg-slate-900 flex flex-col items-center justify-center">
@@ -160,21 +182,29 @@
 
             <div class="absolute bottom-3 left-3 flex items-center gap-2 bg-slate-950/75 backdrop-blur-md px-3 py-1 rounded-full border border-slate-700/40 text-xs font-medium text-white shadow-md">
               <span id="localNameLabel">Você</span>
-              <span id="localMicIndicator">
-                <i data-lucide="mic" class="w-3.5 h-3.5 text-emerald-400"></i>
-              </span>
+              <span id="localMicIndicator"><i data-lucide="mic" class="w-3.5 h-3.5 text-emerald-400"></i></span>
             </div>
+
+            <button onclick="setSpotlight('local')" title="Fixar em Foco" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 bg-slate-950/80 hover:bg-slate-800 text-slate-300 hover:text-white p-2 rounded-xl backdrop-blur-md transition">
+              <i data-lucide="pin" class="w-4 h-4"></i>
+            </button>
 
             <div id="screenShareBadge" class="hidden absolute top-3 left-3 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 backdrop-blur-md">
               <i data-lucide="screen-share" class="w-3.5 h-3.5"></i>
               <span>Compartilhando tela</span>
             </div>
           </div>
-
         </div>
+
+        <!-- MODO SPOTLIGHT / FOCO -->
+        <div id="spotlightContainer" class="hidden w-full h-full max-w-7xl mx-auto flex flex-col gap-3">
+          <div id="spotlightStage" class="flex-1 w-full relative bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center"></div>
+          <div id="spotlightFilmstrip" class="h-28 w-full flex items-center gap-3 overflow-x-auto custom-scrollbar pb-1 px-1 shrink-0"></div>
+        </div>
+
       </main>
 
-      <!-- Painel de Chat -->
+      <!-- Painel de Chat Lateral -->
       <aside id="chatDrawer" class="hidden w-80 md:w-96 bg-slate-900 border-l border-slate-800 flex flex-col z-30 transition-all">
         <div class="p-4 border-b border-slate-800 flex items-center justify-between">
           <h3 class="font-bold text-sm text-white flex items-center gap-2">
@@ -188,7 +218,7 @@
 
         <div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-3 custom-scrollbar text-xs">
           <div class="bg-indigo-950/40 border border-indigo-800/40 text-indigo-300 p-2.5 rounded-xl text-center">
-            Mensagens em tempo real para os membros da sala.
+            Mensagens transmitidas em tempo real para os membros da sala.
           </div>
         </div>
 
@@ -202,7 +232,7 @@
     </div>
 
     <!-- Barra Inferior de Controles -->
-    <footer class="h-20 bg-slate-900/90 border-t border-slate-800/80 flex items-center justify-center px-4 backdrop-blur-lg z-20">
+    <footer class="h-20 bg-slate-900/90 border-t border-slate-800/80 flex items-center justify-center px-4 backdrop-blur-lg z-20 shrink-0">
       <div class="flex items-center gap-2 sm:gap-3 bg-slate-950/80 p-2 rounded-2xl border border-slate-800 shadow-2xl">
         <button id="micBtn" title="Ligar/Desligar Microfone" class="w-12 h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition active:scale-95">
           <i data-lucide="mic" class="w-5 h-5"></i>
@@ -231,7 +261,6 @@
     <span id="toastMsg">Notificação</span>
   </div>
 
-  <!-- ================= SCRIPT WEBRTC ================= -->
   <script>
     lucide.createIcons();
 
@@ -243,18 +272,30 @@
       ]
     };
 
+    const AUDIO_CONSTRAINTS = {
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+      channelCount: 2
+    };
+
     const state = {
       ws: null,
       peerId: null,
       roomName: '',
       userName: '',
+      roomPin: '',
       localStream: null,
       screenStream: null,
       isAudioMuted: false,
       isVideoMuted: false,
       isScreenSharing: false,
       peerConnections: new Map(),
-      iceCandidatesQueue: new Map()
+      iceCandidatesQueue: new Map(),
+      peersData: new Map(),
+      isSpotlightMode: false,
+      spotlightTargetId: 'local',
+      audioContext: null
     };
 
     const lobbyScreen = document.getElementById('lobbyScreen');
@@ -262,10 +303,19 @@
     const joinForm = document.getElementById('joinForm');
     const roomInput = document.getElementById('roomInput');
     const nameInput = document.getElementById('nameInput');
+    const pinInput = document.getElementById('pinInput');
     const lobbyPreviewVideo = document.getElementById('lobbyPreviewVideo');
     const lobbyPlaceholder = document.getElementById('lobbyPlaceholder');
 
     const videoGrid = document.getElementById('videoGrid');
+    const spotlightContainer = document.getElementById('spotlightContainer');
+    const spotlightStage = document.getElementById('spotlightStage');
+    const spotlightFilmstrip = document.getElementById('spotlightFilmstrip');
+    const toggleLayoutBtn = document.getElementById('toggleLayoutBtn');
+    const layoutIcon = document.getElementById('layoutIcon');
+    const layoutText = document.getElementById('layoutText');
+
+    const localCard = document.getElementById('localCard');
     const localVideo = document.getElementById('localVideo');
     const localPlaceholder = document.getElementById('localPlaceholder');
     const localAvatar = document.getElementById('localAvatar');
@@ -273,6 +323,7 @@
     const localMicIndicator = document.getElementById('localMicIndicator');
     const screenShareBadge = document.getElementById('screenShareBadge');
     const activeRoomName = document.getElementById('activeRoomName');
+    const roomPinBadge = document.getElementById('roomPinBadge');
     const participantCount = document.getElementById('participantCount');
 
     const micBtn = document.getElementById('micBtn');
@@ -280,11 +331,18 @@
     const screenBtn = document.getElementById('screenBtn');
     const leaveBtn = document.getElementById('leaveBtn');
 
+    // Auto-preencher URL com ?sala=
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomFromUrl = urlParams.get('sala') || urlParams.get('room') || urlParams.get('r');
+    if (roomFromUrl) {
+      roomInput.value = roomFromUrl.trim().toLowerCase();
+    }
+
     function showToast(message) {
       const toast = document.getElementById('toast');
       document.getElementById('toastMsg').textContent = message;
       toast.classList.remove('opacity-0', 'pointer-events-none');
-      setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 3000);
+      setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 3200);
     }
 
     function getInitials(name) {
@@ -293,24 +351,67 @@
       return parts.length === 1 ? parts[0].substring(0, 2).toUpperCase() : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
 
-    async function initLobby() {
+    async function initMediaWithNoiseSuppression() {
       try {
-        state.localStream = await navigator.mediaDevices.getUserMedia({
+        const stream = await navigator.mediaDevices.getUserMedia({
           video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: true
+          audio: AUDIO_CONSTRAINTS
         });
-        lobbyPreviewVideo.srcObject = state.localStream;
+        state.localStream = stream;
+        lobbyPreviewVideo.srcObject = stream;
         lobbyPlaceholder.classList.add('hidden');
+        setupVoiceDetection('local', stream);
       } catch (err) {
         lobbyPlaceholder.classList.remove('hidden');
       }
     }
-    initLobby();
+    initMediaWithNoiseSuppression();
+
+    function setupVoiceDetection(id, stream) {
+      try {
+        if (!state.audioContext) {
+          state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (state.audioContext.state === 'suspended') {
+          state.audioContext.resume();
+        }
+
+        const audioTrack = stream.getAudioTracks()[0];
+        if (!audioTrack) return;
+
+        const source = state.audioContext.createMediaStreamSource(stream);
+        const analyser = state.audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        source.connect(analyser);
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        function checkLevel() {
+          if (!callScreen.classList.contains('hidden')) {
+            analyser.getByteFrequencyData(dataArray);
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+            const avg = sum / dataArray.length;
+            const cardEl = id === 'local' ? localCard : document.getElementById(`container-${id}`);
+
+            const isMuted = id === 'local' ? state.isAudioMuted : (state.peersData.get(id)?.status?.isAudioMuted);
+            if (avg > 15 && !isMuted) {
+              if (cardEl) cardEl.classList.add('speaking-ring');
+            } else {
+              if (cardEl) cardEl.classList.remove('speaking-ring');
+            }
+          }
+          requestAnimationFrame(checkLevel);
+        }
+        checkLevel();
+      } catch (err) {}
+    }
 
     joinForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       state.roomName = roomInput.value.trim().toLowerCase();
       state.userName = nameInput.value.trim();
+      state.roomPin = pinInput.value.trim();
 
       localNameLabel.textContent = `${state.userName} (Você)`;
       localAvatar.textContent = getInitials(state.userName);
@@ -318,19 +419,15 @@
 
       if (!state.localStream) {
         try {
-          state.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+          state.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: AUDIO_CONSTRAINTS });
+          setupVoiceDetection('local', state.localStream);
         } catch (err) {
           state.localStream = new MediaStream();
         }
       }
 
       localVideo.srcObject = state.localStream;
-
       connectSignaling();
-
-      lobbyScreen.classList.add('hidden');
-      callScreen.classList.remove('hidden');
-      updateGrid();
     });
 
     function connectSignaling() {
@@ -342,6 +439,7 @@
           type: 'join',
           room: state.roomName,
           userName: state.userName,
+          pin: state.roomPin,
           status: { isAudioMuted: state.isAudioMuted, isVideoMuted: state.isVideoMuted }
         });
       };
@@ -360,10 +458,22 @@
 
     async function handleSignalMessage(msg) {
       switch (msg.type) {
+        case 'join-error':
+          showToast(`❌ ${msg.message}`);
+          if (state.ws) state.ws.close();
+          return;
+
         case 'room-joined':
           state.peerId = msg.peerId;
+          if (msg.hasPin) roomPinBadge.classList.remove('hidden');
           updateParticipantCount(msg.peers.length + 1);
+
+          lobbyScreen.classList.add('hidden');
+          callScreen.classList.remove('hidden');
+          updateLayoutView();
+
           for (const peer of msg.peers) {
+            state.peersData.set(peer.peerId, peer);
             createPeerCard(peer.peerId, peer.userName, peer.status);
             await initiateCall(peer.peerId);
           }
@@ -371,6 +481,7 @@
 
         case 'peer-joined':
           showToast(`${msg.userName} entrou`);
+          state.peersData.set(msg.peerId, { userName: msg.userName, status: msg.status });
           createPeerCard(msg.peerId, msg.userName, msg.status);
           updateParticipantCount(state.peerConnections.size + 2);
           break;
@@ -415,7 +526,10 @@
 
       pc.ontrack = (e) => {
         const remoteVideo = document.getElementById(`video-${peerId}`);
-        if (remoteVideo) remoteVideo.srcObject = e.streams[0];
+        if (remoteVideo) {
+          remoteVideo.srcObject = e.streams[0];
+          setupVoiceDetection(peerId, e.streams[0]);
+        }
       };
 
       state.peerConnections.set(peerId, pc);
@@ -479,7 +593,7 @@
 
       const card = document.createElement('div');
       card.id = `container-${peerId}`;
-      card.className = "relative w-full h-full min-h-[220px] max-h-[75vh] bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl flex items-center justify-center";
+      card.className = "relative w-full h-full min-h-[220px] max-h-[75vh] bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl flex items-center justify-center group transition-all duration-300";
 
       card.innerHTML = `
         <video id="video-${peerId}" autoplay playsinline class="no-mirror w-full h-full object-cover"></video>
@@ -493,11 +607,14 @@
           <span>${peerName}</span>
           <span id="mic-status-${peerId}">${status.isAudioMuted ? '<i data-lucide="mic-off" class="w-3.5 h-3.5 text-rose-400"></i>' : '<i data-lucide="mic" class="w-3.5 h-3.5 text-emerald-400"></i>'}</span>
         </div>
+        <button onclick="setSpotlight('${peerId}')" title="Fixar em Foco" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 bg-slate-950/80 hover:bg-slate-800 text-slate-300 hover:text-white p-2 rounded-xl backdrop-blur-md transition">
+          <i data-lucide="pin" class="w-4 h-4"></i>
+        </button>
       `;
 
       videoGrid.appendChild(card);
       lucide.createIcons();
-      updateGrid();
+      updateLayoutView();
     }
 
     function updatePeerStatus(peerId, status) {
@@ -508,6 +625,11 @@
         micStatus.innerHTML = status.isAudioMuted ? '<i data-lucide="mic-off" class="w-3.5 h-3.5 text-rose-400"></i>' : '<i data-lucide="mic" class="w-3.5 h-3.5 text-emerald-400"></i>';
         lucide.createIcons();
       }
+
+      if (status.isScreenSharing) {
+        setSpotlight(peerId);
+        showToast(`${state.peersData.get(peerId)?.userName || 'Alguém'} está compartilhando a tela`);
+      }
     }
 
     function removePeer(peerId) {
@@ -517,20 +639,83 @@
       }
       const card = document.getElementById(`container-${peerId}`);
       if (card) card.remove();
+
+      if (state.spotlightTargetId === peerId) {
+        setSpotlight('local');
+      }
+
       updateParticipantCount(state.peerConnections.size + 1);
-      updateGrid();
+      updateLayoutView();
     }
 
     function updateParticipantCount(count) {
       participantCount.textContent = `${count} participante${count > 1 ? 's' : ''} conectado${count > 1 ? 's' : ''}`;
     }
 
-    function updateGrid() {
-      const total = state.peerConnections.size + 1;
-      videoGrid.className = "w-full h-full max-w-7xl mx-auto grid gap-4 items-center justify-center auto-rows-fr";
-      if (total === 1) videoGrid.classList.add('grid-cols-1', 'max-w-4xl');
-      else if (total === 2) videoGrid.classList.add('grid-cols-1', 'md:grid-cols-2');
-      else videoGrid.classList.add('grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3');
+    // Modo Foco (Spotlight)
+    toggleLayoutBtn.addEventListener('click', () => {
+      state.isSpotlightMode = !state.isSpotlightMode;
+      updateLayoutView();
+    });
+
+    window.setSpotlight = function(targetId) {
+      state.isSpotlightMode = true;
+      state.spotlightTargetId = targetId;
+      updateLayoutView();
+    };
+
+    function updateLayoutView() {
+      const allCards = [localCard, ...Array.from(videoGrid.querySelectorAll('[id^="container-"]'))];
+
+      if (!state.isSpotlightMode) {
+        videoGrid.classList.remove('hidden');
+        spotlightContainer.classList.add('hidden');
+        layoutText.textContent = 'Modo Foco';
+        layoutIcon.setAttribute('data-lucide', 'maximize');
+
+        allCards.forEach(card => {
+          if (card && card.parentElement !== videoGrid) {
+            videoGrid.appendChild(card);
+            card.className = "relative w-full h-full min-h-[220px] max-h-[75vh] bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl flex items-center justify-center group transition-all duration-300";
+          }
+        });
+
+        const total = allCards.length;
+        videoGrid.className = "w-full h-full max-w-7xl mx-auto grid gap-4 items-center justify-center auto-rows-fr";
+        if (total === 1) videoGrid.classList.add('grid-cols-1', 'max-w-4xl');
+        else if (total === 2) videoGrid.classList.add('grid-cols-1', 'md:grid-cols-2');
+        else videoGrid.classList.add('grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3');
+
+      } else {
+        videoGrid.classList.add('hidden');
+        spotlightContainer.classList.remove('hidden');
+        layoutText.textContent = 'Modo Grade';
+        layoutIcon.setAttribute('data-lucide', 'grid');
+
+        spotlightStage.innerHTML = '';
+        spotlightFilmstrip.innerHTML = '';
+
+        const targetCard = state.spotlightTargetId === 'local' 
+          ? localCard 
+          : document.getElementById(`container-${state.spotlightTargetId}`);
+
+        if (targetCard) {
+          spotlightStage.appendChild(targetCard);
+          targetCard.className = "relative w-full h-full bg-slate-900 rounded-2xl overflow-hidden flex items-center justify-center";
+        }
+
+        allCards.forEach(card => {
+          if (card && card !== targetCard) {
+            spotlightFilmstrip.appendChild(card);
+            card.className = "relative h-24 aspect-video bg-slate-900 border border-slate-700/80 rounded-xl overflow-hidden shrink-0 cursor-pointer hover:border-indigo-500 transition group";
+            card.onclick = () => {
+              const clickedId = card.id === 'localCard' ? 'local' : card.id.replace('container-', '');
+              setSpotlight(clickedId);
+            };
+          }
+        });
+      }
+      lucide.createIcons();
     }
 
     micBtn.addEventListener('click', () => {
@@ -583,7 +768,10 @@
           screenBtn.classList.add('bg-emerald-600');
           screenBtn.classList.remove('bg-slate-800');
 
+          setSpotlight('local');
+
           screenTrack.onended = () => stopScreen();
+          sendWs({ type: 'user-status', status: { isScreenSharing: true } });
         } catch (err) {
           console.warn('Compartilhamento cancelado:', err);
         }
@@ -608,6 +796,8 @@
       state.isScreenSharing = false;
       screenBtn.classList.remove('bg-emerald-600');
       screenBtn.classList.add('bg-slate-800');
+
+      sendWs({ type: 'user-status', status: { isScreenSharing: false } });
     }
 
     leaveBtn.addEventListener('click', () => {
@@ -619,8 +809,17 @@
       if (state.ws) state.ws.close();
       callScreen.classList.add('hidden');
       lobbyScreen.classList.remove('hidden');
-      initLobby();
-      showToast('Você desconectou da chamada');
+      initMediaWithNoiseSuppression();
+      showToast('Você saiu da chamada');
+    });
+
+    document.getElementById('copyRoomBtn').addEventListener('click', () => {
+      const directUrl = `${window.location.origin}${window.location.pathname}?sala=${state.roomName}`;
+      navigator.clipboard.writeText(directUrl).then(() => {
+        showToast('Link direto copiado com sucesso!');
+      }).catch(() => {
+        showToast(`Código da sala: ${state.roomName}`);
+      });
     });
 
     const chatDrawer = document.getElementById('chatDrawer');
