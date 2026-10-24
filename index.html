@@ -3,65 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WebRTC Call & Screen Share - Tempo Real</title>
-  <!-- Tailwind CSS CDN -->
+  <title>Nexus Call - Estilo Discord em Full HD</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    video {
-      transform: scaleX(-1);
-    }
-    video.no-mirror {
-      transform: scaleX(1);
-    }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: rgba(100, 116, 139, 0.4);
-      border-radius: 9999px;
-    }
-    .pulse-ring {
-      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
-      animation: pulse-ring 2s infinite cubic-bezier(0.66, 0, 0, 1);
-    }
-    @keyframes pulse-ring {
-      to { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+    video.mirror-cam { transform: scaleX(-1); }
+    video.no-mirror { transform: scaleX(1); }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.4); border-radius: 9999px; }
+    .speaking-border {
+      box-shadow: 0 0 0 3px #22c55e, 0 0 16px rgba(34, 197, 94, 0.5) !important;
     }
   </style>
 </head>
-<body class="h-full flex flex-col font-sans select-none overflow-hidden">
+<body class="h-full flex flex-col font-sans select-none overflow-hidden bg-[#0e1015]">
 
   <!-- ================= TELA 1: LOBBY ================= -->
-  <div id="lobbyScreen" class="flex-1 flex flex-col items-center justify-center p-4 relative z-10">
-    <div class="absolute inset-0 bg-gradient-to-tr from-indigo-950/40 via-slate-950 to-emerald-950/30 -z-10 pointer-events-none"></div>
+  <div id="lobbyScreen" class="flex-1 flex flex-col items-center justify-center p-4 relative z-10 overflow-y-auto custom-scrollbar">
+    <div class="absolute inset-0 bg-gradient-to-tr from-indigo-950/40 via-[#0e1015] to-emerald-950/20 -z-10 pointer-events-none"></div>
 
-    <div class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
-      <div class="flex items-center gap-3 mb-6">
+    <div class="w-full max-w-md bg-[#161922] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl my-auto">
+      <div class="flex items-center gap-3 mb-5">
         <div class="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
           <i data-lucide="video" class="w-6 h-6"></i>
         </div>
         <div>
           <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            Nexus Call <span class="text-xs bg-indigo-500/20 text-indigo-300 font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">WebRTC P2P</span>
+            Nexus Call <span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">HD 1080p</span>
           </h1>
-          <p class="text-xs text-slate-400">Vídeo, áudio e transmissão de tela sem limites</p>
+          <p class="text-xs text-slate-400">Câmera angular natural e divisão estilo Discord</p>
         </div>
       </div>
 
-      <!-- Preview da Câmera no Lobby -->
-      <div class="relative w-full aspect-video bg-slate-950 rounded-2xl overflow-hidden mb-6 border border-slate-800 shadow-inner group">
-        <video id="lobbyPreviewVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
-        <div id="lobbyPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 text-slate-500">
+      <!-- Preview da Câmera em 16:9 Real (Sem corte/zoom) -->
+      <div class="relative w-full aspect-video bg-[#0b0c10] rounded-2xl overflow-hidden mb-5 border border-slate-800 shadow-inner group flex items-center justify-center">
+        <video id="lobbyPreviewVideo" autoplay playsinline muted class="mirror-cam w-full h-full object-cover"></video>
+        <div id="lobbyPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-[#0b0c10] text-slate-500">
           <i data-lucide="camera-off" class="w-10 h-10 mb-2 stroke-1"></i>
           <span class="text-xs font-medium">Câmera desativada</span>
         </div>
 
-        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-700/60 shadow-lg">
+        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-[#161922]/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-700/60 shadow-lg">
           <button id="lobbyMicToggle" type="button" class="p-2 rounded-full hover:bg-slate-800 text-slate-300 hover:text-white transition">
             <i data-lucide="mic" class="w-4 h-4"></i>
           </button>
@@ -72,9 +55,9 @@
       </div>
 
       <!-- Formulário de Entrada -->
-      <form id="joinForm" class="space-y-4">
+      <form id="joinForm" class="space-y-3.5">
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5" for="roomInput">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1" for="roomInput">
             Nome da Sala
           </label>
           <div class="relative">
@@ -85,14 +68,14 @@
               id="roomInput" 
               type="text" 
               required 
-              placeholder="ex: reuniao-de-equipe" 
-              class="w-full pl-10 pr-4 py-2.5 bg-slate-950/60 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+              placeholder="ex: resenha-jogos" 
+              class="w-full pl-10 pr-4 py-2.5 bg-[#0b0c10] border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5" for="nameInput">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1" for="nameInput">
             Seu Nome ou Apelido
           </label>
           <div class="relative">
@@ -103,8 +86,25 @@
               id="nameInput" 
               type="text" 
               required 
-              placeholder="ex: Carlos Silva" 
-              class="w-full pl-10 pr-4 py-2.5 bg-slate-950/60 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+              placeholder="ex: Mikael" 
+              class="w-full pl-10 pr-4 py-2.5 bg-[#0b0c10] border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1" for="pinInput">
+            Senha / PIN da Sala <span class="text-slate-500 font-normal lowercase">(opcional)</span>
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+              <i data-lucide="lock" class="w-4 h-4"></i>
+            </div>
+            <input 
+              id="pinInput" 
+              type="password" 
+              placeholder="Digite um PIN (se a sala exigir)" 
+              class="w-full pl-10 pr-4 py-2.5 bg-[#0b0c10] border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
         </div>
@@ -121,61 +121,77 @@
     </div>
   </div>
 
-  <!-- ================= TELA 2: SALA DE CHAMADA ================= -->
-  <div id="callScreen" class="hidden flex-1 flex flex-col h-full bg-slate-950 overflow-hidden relative">
+  <!-- ================= TELA 2: SALA ESTILO DISCORD ================= -->
+  <div id="callScreen" class="hidden flex-1 flex flex-col h-full bg-[#0e1015] overflow-hidden relative">
     
-    <header class="h-16 px-4 md:px-6 bg-slate-900/80 border-b border-slate-800/80 flex items-center justify-between backdrop-blur-md z-20">
+    <!-- Topbar Superior -->
+    <header class="h-14 px-4 md:px-6 bg-[#161922]/90 border-b border-slate-800/80 flex items-center justify-between backdrop-blur-md z-20 shrink-0">
       <div class="flex items-center gap-3">
-        <div class="w-3 h-3 rounded-full bg-emerald-500 pulse-ring"></div>
+        <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
         <div>
           <div class="flex items-center gap-2">
-            <h2 id="activeRoomName" class="font-bold text-sm md:text-base text-white tracking-wide">sala</h2>
+            <h2 id="activeRoomName" class="font-bold text-sm md:text-base text-white tracking-wide">#sala</h2>
+            <span id="roomPinBadge" class="hidden text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 font-medium">
+              <i data-lucide="lock" class="w-3 h-3"></i> PIN
+            </span>
             <button id="copyRoomBtn" title="Copiar link da sala" class="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800 transition">
               <i data-lucide="copy" class="w-3.5 h-3.5"></i>
             </button>
           </div>
-          <p id="participantCount" class="text-[11px] text-slate-400">1 participante conectado</p>
+          <p id="participantCount" class="text-[11px] text-slate-400">1 conectado</p>
         </div>
       </div>
 
-      <button id="toggleChatBtn" class="relative p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center gap-2 text-xs font-medium">
-        <i data-lucide="message-square" class="w-4 h-4"></i>
-        <span class="hidden sm:inline">Chat</span>
-        <span id="unreadBadge" class="hidden absolute -top-1 -right-1 w-4 h-4 rounded-full bg-indigo-500 text-[10px] text-white flex items-center justify-center font-bold">1</span>
-      </button>
+      <div class="flex items-center gap-2">
+        <button id="fullscreenBtn" title="Modo Tela Cheia" class="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center gap-1.5 text-xs font-medium">
+          <i data-lucide="maximize" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Tela Cheia</span>
+        </button>
+
+        <button id="toggleChatBtn" class="relative p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center gap-1.5 text-xs font-medium">
+          <i data-lucide="message-square" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Chat</span>
+          <span id="unreadBadge" class="hidden absolute -top-1 -right-1 w-4 h-4 rounded-full bg-indigo-500 text-[10px] text-white flex items-center justify-center font-bold">1</span>
+        </button>
+      </div>
     </header>
 
+    <!-- PALCO DE VÍDEOS COM DIVISÃO DISCORD -->
     <div class="flex-1 flex overflow-hidden relative">
-      <main class="flex-1 p-3 md:p-6 overflow-y-auto custom-scrollbar flex items-center justify-center">
-        <div id="videoGrid" class="w-full h-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 items-center justify-center auto-rows-fr">
+      <main id="videoArea" class="flex-1 p-3 md:p-4 overflow-hidden flex items-center justify-center">
+        
+        <div id="videoContainer" class="w-full h-full flex flex-wrap items-center justify-center gap-3 md:gap-4 overflow-hidden">
           
-          <!-- Box do Vídeo Local -->
-          <div id="localVideoContainer" class="relative w-full h-full min-h-[220px] max-h-[75vh] bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl flex items-center justify-center">
-            <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
+          <!-- Box Local (Você) -->
+          <div id="localCard" class="relative flex-1 min-w-[280px] max-w-full h-full max-h-[85vh] aspect-video bg-[#161922] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center group transition-all duration-300">
+            <video id="localVideo" autoplay playsinline muted class="mirror-cam w-full h-full object-cover"></video>
             
-            <div id="localPlaceholder" class="hidden absolute inset-0 bg-slate-900 flex flex-col items-center justify-center">
+            <div id="localPlaceholder" class="hidden absolute inset-0 bg-[#161922] flex flex-col items-center justify-center">
               <div id="localAvatar" class="w-20 h-20 rounded-full bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center text-indigo-300 text-2xl font-bold mb-2 shadow-lg">EU</div>
-              <span class="text-xs text-slate-400 font-medium">Sua câmera está desligada</span>
+              <span class="text-xs text-slate-400 font-medium">Câmera desligada</span>
             </div>
 
-            <div class="absolute bottom-3 left-3 flex items-center gap-2 bg-slate-950/75 backdrop-blur-md px-3 py-1 rounded-full border border-slate-700/40 text-xs font-medium text-white shadow-md">
+            <div class="absolute bottom-3 left-3 flex items-center gap-2 bg-[#0b0c10]/80 backdrop-blur-md px-3 py-1 rounded-full border border-slate-700/50 text-xs font-medium text-white shadow-md z-10">
               <span id="localNameLabel">Você</span>
-              <span id="localMicIndicator">
-                <i data-lucide="mic" class="w-3.5 h-3.5 text-emerald-400"></i>
-              </span>
+              <span id="localMicIndicator"><i data-lucide="mic" class="w-3.5 h-3.5 text-emerald-400"></i></span>
             </div>
 
-            <div id="screenShareBadge" class="hidden absolute top-3 left-3 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 backdrop-blur-md">
+            <div id="screenShareBadge" class="hidden absolute top-3 left-3 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 backdrop-blur-md z-10">
               <i data-lucide="screen-share" class="w-3.5 h-3.5"></i>
               <span>Compartilhando tela</span>
             </div>
+
+            <button onclick="toggleVideoFullscreen(document.getElementById('localCard'))" title="Expandir este vídeo" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 bg-[#0b0c10]/80 hover:bg-slate-800 text-slate-300 hover:text-white p-2 rounded-xl backdrop-blur-md transition z-10">
+              <i data-lucide="maximize-2" class="w-4 h-4"></i>
+            </button>
           </div>
 
         </div>
+
       </main>
 
-      <!-- Painel de Chat -->
-      <aside id="chatDrawer" class="hidden w-80 md:w-96 bg-slate-900 border-l border-slate-800 flex flex-col z-30 transition-all">
+      <!-- Painel de Chat Lateral -->
+      <aside id="chatDrawer" class="hidden w-80 md:w-96 bg-[#161922] border-l border-slate-800 flex flex-col z-30 transition-all">
         <div class="p-4 border-b border-slate-800 flex items-center justify-between">
           <h3 class="font-bold text-sm text-white flex items-center gap-2">
             <i data-lucide="messages-square" class="w-4 h-4 text-indigo-400"></i>
@@ -188,12 +204,12 @@
 
         <div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-3 custom-scrollbar text-xs">
           <div class="bg-indigo-950/40 border border-indigo-800/40 text-indigo-300 p-2.5 rounded-xl text-center">
-            Mensagens em tempo real para os membros da sala.
+            Mensagens em tempo real entre todos na sala.
           </div>
         </div>
 
         <form id="chatForm" class="p-3 border-t border-slate-800 flex gap-2">
-          <input id="chatInput" type="text" placeholder="Digite sua mensagem..." class="flex-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+          <input id="chatInput" type="text" placeholder="Digite sua mensagem..." class="flex-1 px-3 py-2 bg-[#0b0c10] border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500" />
           <button type="submit" class="p-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition">
             <i data-lucide="send" class="w-4 h-4"></i>
           </button>
@@ -201,9 +217,9 @@
       </aside>
     </div>
 
-    <!-- Barra Inferior de Controles -->
-    <footer class="h-20 bg-slate-900/90 border-t border-slate-800/80 flex items-center justify-center px-4 backdrop-blur-lg z-20">
-      <div class="flex items-center gap-2 sm:gap-3 bg-slate-950/80 p-2 rounded-2xl border border-slate-800 shadow-2xl">
+    <!-- Barra Inferior -->
+    <footer class="h-20 bg-[#161922]/95 border-t border-slate-800/80 flex items-center justify-center px-4 backdrop-blur-lg z-20 shrink-0">
+      <div class="flex items-center gap-2 sm:gap-3 bg-[#0b0c10]/80 p-2 rounded-2xl border border-slate-800 shadow-2xl">
         <button id="micBtn" title="Ligar/Desligar Microfone" class="w-12 h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition active:scale-95">
           <i data-lucide="mic" class="w-5 h-5"></i>
         </button>
@@ -212,7 +228,7 @@
           <i data-lucide="video" class="w-5 h-5"></i>
         </button>
 
-        <button id="screenBtn" title="Compartilhar Tela" class="w-12 h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition active:scale-95">
+        <button id="screenBtn" title="Compartilhar Tela em Full HD" class="w-12 h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition active:scale-95">
           <i data-lucide="screen-share" class="w-5 h-5"></i>
         </button>
 
@@ -226,12 +242,11 @@
     </footer>
   </div>
 
-  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900 border border-slate-700 text-white px-4 py-2 rounded-xl shadow-2xl text-xs font-medium flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300">
+  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#161922] border border-slate-700 text-white px-4 py-2 rounded-xl shadow-2xl text-xs font-medium flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300">
     <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
     <span id="toastMsg">Notificação</span>
   </div>
 
-  <!-- ================= SCRIPT WEBRTC ================= -->
   <script>
     lucide.createIcons();
 
@@ -243,18 +258,37 @@
       ]
     };
 
+    // Parâmetros Full HD em proporção 16:9 Real (Sem corte/zoom)
+    const MEDIA_CONSTRAINTS = {
+      video: {
+        width: { ideal: 1920, min: 1280 },
+        height: { ideal: 1080, min: 720 },
+        aspectRatio: { ideal: 1.7777777778 },
+        frameRate: { ideal: 30, max: 60 }
+      },
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        channelCount: 2
+      }
+    };
+
     const state = {
       ws: null,
       peerId: null,
       roomName: '',
       userName: '',
+      roomPin: '',
       localStream: null,
       screenStream: null,
       isAudioMuted: false,
       isVideoMuted: false,
       isScreenSharing: false,
       peerConnections: new Map(),
-      iceCandidatesQueue: new Map()
+      iceCandidatesQueue: new Map(),
+      peersData: new Map(),
+      audioContext: null
     };
 
     const lobbyScreen = document.getElementById('lobbyScreen');
@@ -262,10 +296,12 @@
     const joinForm = document.getElementById('joinForm');
     const roomInput = document.getElementById('roomInput');
     const nameInput = document.getElementById('nameInput');
+    const pinInput = document.getElementById('pinInput');
     const lobbyPreviewVideo = document.getElementById('lobbyPreviewVideo');
     const lobbyPlaceholder = document.getElementById('lobbyPlaceholder');
 
-    const videoGrid = document.getElementById('videoGrid');
+    const videoContainer = document.getElementById('videoContainer');
+    const localCard = document.getElementById('localCard');
     const localVideo = document.getElementById('localVideo');
     const localPlaceholder = document.getElementById('localPlaceholder');
     const localAvatar = document.getElementById('localAvatar');
@@ -273,18 +309,26 @@
     const localMicIndicator = document.getElementById('localMicIndicator');
     const screenShareBadge = document.getElementById('screenShareBadge');
     const activeRoomName = document.getElementById('activeRoomName');
+    const roomPinBadge = document.getElementById('roomPinBadge');
     const participantCount = document.getElementById('participantCount');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
 
     const micBtn = document.getElementById('micBtn');
     const camBtn = document.getElementById('camBtn');
     const screenBtn = document.getElementById('screenBtn');
     const leaveBtn = document.getElementById('leaveBtn');
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomFromUrl = urlParams.get('sala') || urlParams.get('room') || urlParams.get('r');
+    if (roomFromUrl) {
+      roomInput.value = roomFromUrl.trim().toLowerCase();
+    }
+
     function showToast(message) {
       const toast = document.getElementById('toast');
       document.getElementById('toastMsg').textContent = message;
       toast.classList.remove('opacity-0', 'pointer-events-none');
-      setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 3000);
+      setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 3200);
     }
 
     function getInitials(name) {
@@ -293,24 +337,87 @@
       return parts.length === 1 ? parts[0].substring(0, 2).toUpperCase() : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
 
-    async function initLobby() {
+    async function initHDMedia() {
       try {
-        state.localStream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: true
-        });
-        lobbyPreviewVideo.srcObject = state.localStream;
+        const stream = await navigator.mediaDevices.getUserMedia(MEDIA_CONSTRAINTS);
+        state.localStream = stream;
+        lobbyPreviewVideo.srcObject = stream;
         lobbyPlaceholder.classList.add('hidden');
+        setupVoiceDetection('local', stream);
       } catch (err) {
-        lobbyPlaceholder.classList.remove('hidden');
+        console.warn('Câmera Full HD falhou, usando compatível:', err);
+        try {
+          state.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+          lobbyPreviewVideo.srcObject = state.localStream;
+          lobbyPlaceholder.classList.add('hidden');
+        } catch (e) {
+          lobbyPlaceholder.classList.remove('hidden');
+        }
       }
     }
-    initLobby();
+    initHDMedia();
+
+    function setupVoiceDetection(id, stream) {
+      try {
+        if (!state.audioContext) {
+          state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (state.audioContext.state === 'suspended') {
+          state.audioContext.resume();
+        }
+
+        const audioTrack = stream.getAudioTracks()[0];
+        if (!audioTrack) return;
+
+        const source = state.audioContext.createMediaStreamSource(stream);
+        const analyser = state.audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        source.connect(analyser);
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        function checkLevel() {
+          if (!callScreen.classList.contains('hidden')) {
+            analyser.getByteFrequencyData(dataArray);
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+            const avg = sum / dataArray.length;
+            const cardEl = id === 'local' ? localCard : document.getElementById(`container-${id}`);
+
+            const isMuted = id === 'local' ? state.isAudioMuted : (state.peersData.get(id)?.status?.isAudioMuted);
+            if (avg > 18 && !isMuted) {
+              if (cardEl) cardEl.classList.add('speaking-border');
+            } else {
+              if (cardEl) cardEl.classList.remove('speaking-border');
+            }
+          }
+          requestAnimationFrame(checkLevel);
+        }
+        checkLevel();
+      } catch (err) {}
+    }
+
+    async function boostSenderBitrate(pc) {
+      try {
+        const senders = pc.getSenders();
+        for (const sender of senders) {
+          if (sender.track && sender.track.kind === 'video') {
+            const params = sender.getParameters();
+            if (!params.encodings || params.encodings.length === 0) {
+              params.encodings = [{}];
+            }
+            params.encodings[0].maxBitrate = 3500000;
+            await sender.setParameters(params);
+          }
+        }
+      } catch (err) {}
+    }
 
     joinForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       state.roomName = roomInput.value.trim().toLowerCase();
       state.userName = nameInput.value.trim();
+      state.roomPin = pinInput.value.trim();
 
       localNameLabel.textContent = `${state.userName} (Você)`;
       localAvatar.textContent = getInitials(state.userName);
@@ -318,19 +425,15 @@
 
       if (!state.localStream) {
         try {
-          state.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+          state.localStream = await navigator.mediaDevices.getUserMedia(MEDIA_CONSTRAINTS);
+          setupVoiceDetection('local', state.localStream);
         } catch (err) {
           state.localStream = new MediaStream();
         }
       }
 
       localVideo.srcObject = state.localStream;
-
       connectSignaling();
-
-      lobbyScreen.classList.add('hidden');
-      callScreen.classList.remove('hidden');
-      updateGrid();
     });
 
     function connectSignaling() {
@@ -342,6 +445,7 @@
           type: 'join',
           room: state.roomName,
           userName: state.userName,
+          pin: state.roomPin,
           status: { isAudioMuted: state.isAudioMuted, isVideoMuted: state.isVideoMuted }
         });
       };
@@ -360,10 +464,22 @@
 
     async function handleSignalMessage(msg) {
       switch (msg.type) {
+        case 'join-error':
+          showToast(`❌ ${msg.message}`);
+          if (state.ws) state.ws.close();
+          return;
+
         case 'room-joined':
           state.peerId = msg.peerId;
+          if (msg.hasPin) roomPinBadge.classList.remove('hidden');
           updateParticipantCount(msg.peers.length + 1);
+
+          lobbyScreen.classList.add('hidden');
+          callScreen.classList.remove('hidden');
+          recalculateDiscordGrid();
+
           for (const peer of msg.peers) {
+            state.peersData.set(peer.peerId, peer);
             createPeerCard(peer.peerId, peer.userName, peer.status);
             await initiateCall(peer.peerId);
           }
@@ -371,8 +487,10 @@
 
         case 'peer-joined':
           showToast(`${msg.userName} entrou`);
+          state.peersData.set(msg.peerId, { userName: msg.userName, status: msg.status });
           createPeerCard(msg.peerId, msg.userName, msg.status);
           updateParticipantCount(state.peerConnections.size + 2);
+          recalculateDiscordGrid();
           break;
 
         case 'signal':
@@ -415,7 +533,10 @@
 
       pc.ontrack = (e) => {
         const remoteVideo = document.getElementById(`video-${peerId}`);
-        if (remoteVideo) remoteVideo.srcObject = e.streams[0];
+        if (remoteVideo) {
+          remoteVideo.srcObject = e.streams[0];
+          setupVoiceDetection(peerId, e.streams[0]);
+        }
       };
 
       state.peerConnections.set(peerId, pc);
@@ -426,6 +547,8 @@
       const pc = getOrCreatePeerConnection(peerId);
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
+
+      await boostSenderBitrate(pc);
 
       sendWs({
         type: 'signal',
@@ -449,6 +572,8 @@
 
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
+
+        await boostSenderBitrate(pc);
 
         sendWs({
           type: 'signal',
@@ -479,34 +604,57 @@
 
       const card = document.createElement('div');
       card.id = `container-${peerId}`;
-      card.className = "relative w-full h-full min-h-[220px] max-h-[75vh] bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl flex items-center justify-center";
+      card.className = "relative flex-1 min-w-[280px] max-w-full h-full max-h-[85vh] aspect-video bg-[#161922] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center group transition-all duration-300";
 
       card.innerHTML = `
         <video id="video-${peerId}" autoplay playsinline class="no-mirror w-full h-full object-cover"></video>
-        <div id="placeholder-${peerId}" class="${status.isVideoMuted ? '' : 'hidden'} absolute inset-0 bg-slate-900 flex flex-col items-center justify-center">
+        
+        <div id="placeholder-${peerId}" class="${status.isVideoMuted ? '' : 'hidden'} absolute inset-0 bg-[#161922] flex flex-col items-center justify-center">
           <div class="w-20 h-20 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 text-2xl font-bold mb-2 shadow-lg">
             ${getInitials(peerName)}
           </div>
           <span class="text-xs text-slate-400 font-medium">${peerName}</span>
         </div>
-        <div class="absolute bottom-3 left-3 flex items-center gap-2 bg-slate-950/75 backdrop-blur-md px-3 py-1 rounded-full border border-slate-700/40 text-xs font-medium text-white shadow-md">
+
+        <div class="absolute bottom-3 left-3 flex items-center gap-2 bg-[#0b0c10]/80 backdrop-blur-md px-3 py-1 rounded-full border border-slate-700/50 text-xs font-medium text-white shadow-md z-10">
           <span>${peerName}</span>
           <span id="mic-status-${peerId}">${status.isAudioMuted ? '<i data-lucide="mic-off" class="w-3.5 h-3.5 text-rose-400"></i>' : '<i data-lucide="mic" class="w-3.5 h-3.5 text-emerald-400"></i>'}</span>
         </div>
+
+        <button onclick="toggleVideoFullscreen(document.getElementById('container-${peerId}'))" title="Expandir este vídeo" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 bg-[#0b0c10]/80 hover:bg-slate-800 text-slate-300 hover:text-white p-2 rounded-xl backdrop-blur-md transition z-10">
+          <i data-lucide="maximize-2" class="w-4 h-4"></i>
+        </button>
       `;
 
-      videoGrid.appendChild(card);
+      videoContainer.appendChild(card);
       lucide.createIcons();
-      updateGrid();
+      recalculateDiscordGrid();
     }
 
     function updatePeerStatus(peerId, status) {
       const placeholder = document.getElementById(`placeholder-${peerId}`);
       const micStatus = document.getElementById(`mic-status-${peerId}`);
+      const videoEl = document.getElementById(`video-${peerId}`);
+
       if (placeholder && status.isVideoMuted !== undefined) placeholder.classList.toggle('hidden', !status.isVideoMuted);
       if (micStatus && status.isAudioMuted !== undefined) {
         micStatus.innerHTML = status.isAudioMuted ? '<i data-lucide="mic-off" class="w-3.5 h-3.5 text-rose-400"></i>' : '<i data-lucide="mic" class="w-3.5 h-3.5 text-emerald-400"></i>';
         lucide.createIcons();
+      }
+
+      if (status.isScreenSharing) {
+        if (videoEl) {
+          videoEl.classList.remove('object-cover');
+          videoEl.classList.add('object-contain');
+        }
+        showToast(`${state.peersData.get(peerId)?.userName || 'Alguém'} compartilhou a tela em Full HD`);
+        recalculateDiscordGrid(peerId);
+      } else {
+        if (videoEl) {
+          videoEl.classList.remove('object-contain');
+          videoEl.classList.add('object-cover');
+        }
+        recalculateDiscordGrid();
       }
     }
 
@@ -517,21 +665,71 @@
       }
       const card = document.getElementById(`container-${peerId}`);
       if (card) card.remove();
+
       updateParticipantCount(state.peerConnections.size + 1);
-      updateGrid();
+      recalculateDiscordGrid();
     }
 
     function updateParticipantCount(count) {
-      participantCount.textContent = `${count} participante${count > 1 ? 's' : ''} conectado${count > 1 ? 's' : ''}`;
+      participantCount.textContent = `${count} ${count > 1 ? 'conectados' : 'conectado'}`;
     }
 
-    function updateGrid() {
-      const total = state.peerConnections.size + 1;
-      videoGrid.className = "w-full h-full max-w-7xl mx-auto grid gap-4 items-center justify-center auto-rows-fr";
-      if (total === 1) videoGrid.classList.add('grid-cols-1', 'max-w-4xl');
-      else if (total === 2) videoGrid.classList.add('grid-cols-1', 'md:grid-cols-2');
-      else videoGrid.classList.add('grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3');
+    // Algoritmo de proporção idêntico ao Discord
+    function recalculateDiscordGrid(screenSharePeerId = null) {
+      const cards = Array.from(videoContainer.children);
+      const count = cards.length;
+
+      if (screenSharePeerId) {
+        cards.forEach(card => {
+          if (card.id === `container-${screenSharePeerId}` || (screenSharePeerId === 'local' && card.id === 'localCard')) {
+            card.style.flex = "1 1 100%";
+            card.style.maxHeight = "95vh";
+            card.style.height = "100%";
+          } else {
+            card.style.flex = "0 0 200px";
+            card.style.maxHeight = "130px";
+            card.style.height = "130px";
+          }
+        });
+        return;
+      }
+
+      cards.forEach(card => {
+        if (count === 1) {
+          card.style.flex = "0 1 85%";
+          card.style.maxHeight = "80vh";
+          card.style.height = "100%";
+        } else if (count === 2) {
+          card.style.flex = "1 1 45%";
+          card.style.maxHeight = "80vh";
+          card.style.height = "100%";
+        } else if (count <= 4) {
+          card.style.flex = "1 1 45%";
+          card.style.maxHeight = "45vh";
+          card.style.height = "45vh";
+        } else {
+          card.style.flex = "1 1 30%";
+          card.style.maxHeight = "35vh";
+          card.style.height = "35vh";
+        }
+      });
     }
+
+    window.toggleVideoFullscreen = function(cardEl) {
+      if (!document.fullscreenElement) {
+        cardEl.requestFullscreen().catch(err => console.warn(err));
+      } else {
+        document.exitFullscreen().catch(err => console.warn(err));
+      }
+    };
+
+    fullscreenBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => console.warn(err));
+      } else {
+        document.exitFullscreen().catch(err => console.warn(err));
+      }
+    });
 
     micBtn.addEventListener('click', () => {
       if (!state.localStream) return;
@@ -568,7 +766,17 @@
         stopScreen();
       } else {
         try {
-          state.screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+          state.screenStream = await navigator.mediaDevices.getDisplayMedia({
+            video: {
+              cursor: 'always',
+              displaySurface: 'monitor',
+              width: { ideal: 1920, max: 2560 },
+              height: { ideal: 1080, max: 1440 },
+              frameRate: { ideal: 30, max: 60 }
+            },
+            audio: false
+          });
+
           const screenTrack = state.screenStream.getVideoTracks()[0];
 
           state.peerConnections.forEach(pc => {
@@ -577,13 +785,19 @@
           });
 
           localVideo.srcObject = state.screenStream;
-          localVideo.classList.add('no-mirror');
+          localVideo.classList.remove('mirror-cam');
+          localVideo.classList.remove('object-cover');
+          localVideo.classList.add('object-contain');
           screenShareBadge.classList.remove('hidden');
+
           state.isScreenSharing = true;
           screenBtn.classList.add('bg-emerald-600');
           screenBtn.classList.remove('bg-slate-800');
 
+          recalculateDiscordGrid('local');
+
           screenTrack.onended = () => stopScreen();
+          sendWs({ type: 'user-status', status: { isScreenSharing: true } });
         } catch (err) {
           console.warn('Compartilhamento cancelado:', err);
         }
@@ -603,11 +817,17 @@
       }
 
       localVideo.srcObject = state.localStream;
-      localVideo.classList.remove('no-mirror');
+      localVideo.classList.add('mirror-cam');
+      localVideo.classList.remove('object-contain');
+      localVideo.classList.add('object-cover');
       screenShareBadge.classList.add('hidden');
+
       state.isScreenSharing = false;
       screenBtn.classList.remove('bg-emerald-600');
       screenBtn.classList.add('bg-slate-800');
+
+      recalculateDiscordGrid();
+      sendWs({ type: 'user-status', status: { isScreenSharing: false } });
     }
 
     leaveBtn.addEventListener('click', () => {
@@ -619,8 +839,17 @@
       if (state.ws) state.ws.close();
       callScreen.classList.add('hidden');
       lobbyScreen.classList.remove('hidden');
-      initLobby();
-      showToast('Você desconectou da chamada');
+      initHDMedia();
+      showToast('Você saiu da chamada');
+    });
+
+    document.getElementById('copyRoomBtn').addEventListener('click', () => {
+      const directUrl = `${window.location.origin}${window.location.pathname}?sala=${state.roomName}`;
+      navigator.clipboard.writeText(directUrl).then(() => {
+        showToast('Link da sala copiado!');
+      }).catch(() => {
+        showToast(`Código da sala: ${state.roomName}`);
+      });
     });
 
     const chatDrawer = document.getElementById('chatDrawer');
