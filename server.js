@@ -1,9 +1,15 @@
+/**
+ * server.js
+ * Servidor Web e Sinalizador WebSocket para WebRTC com suporte a PIN
+ */
+
 import express from 'express';
 import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,14 +18,25 @@ const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 
-// Servir arquivos estáticos da pasta "public"
-app.use(express.static(path.join(__dirname, 'public')));
+// Encontra o index.html na pasta "public" ou na raiz
+const hasPublicDir = fs.existsSync(path.join(__dirname, 'public', 'index.html'));
+const publicPath = hasPublicDir ? path.join(__dirname, 'public') : __dirname;
+const indexPath = hasPublicDir 
+  ? path.join(__dirname, 'public', 'index.html') 
+  : path.join(__dirname, 'index.html');
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.use(express.static(publicPath));
+
+app.get('*', (req, res) => {
+  res.sendFile(indexPath);
 });
 
 const wss = new WebSocketServer({ server });
+
+/**
+ * Estrutura de Salas:
+ * Map<roomName, { pin: string | null, peers: Map<peerId, { ws, peerId, userName, status }> }>
+ */
 const rooms = new Map();
 
 function generateId() {
@@ -33,10 +50,10 @@ function sendJSON(ws, data) {
 }
 
 function broadcastToRoom(roomName, data, excludePeerId = null) {
-  const roomPeers = rooms.get(roomName);
-  if (!roomPeers) return;
+  const roomData = rooms.get(roomName);
+  if (!roomData || !roomData.peers) return;
 
-  roomPeers.forEach((client, peerId) => {
+  roomData.peers.forEach((client, peerId) => {
     if (peerId !== excludePeerId) {
       sendJSON(client.ws, data);
     }
@@ -47,9 +64,9 @@ function removePeerFromRoom(ws) {
   const { roomName, peerId, userName } = ws;
   if (!roomName || !peerId) return;
 
-  const roomPeers = rooms.get(roomName);
-  if (roomPeers && roomPeers.has(peerId)) {
-    roomPeers.delete(peerId);
+  const roomData = rooms.get(roomName);
+  if (roomData && roomData.peers && roomData.peers.has(peerId)) {
+    roomData.peers.delete(peerId);
     console.log(`[Sala: ${roomName}] Usuário desconectado: ${userName || peerId}`);
 
     broadcastToRoom(roomName, {
@@ -58,8 +75,9 @@ function removePeerFromRoom(ws) {
       userName
     });
 
-    if (roomPeers.size === 0) {
+    if (roomData.peers.size === 0) {
       rooms.delete(roomName);
+      console.log(`[Sala: ${roomName}] Sala encerrada (sem membros)`);
     }
   }
 
@@ -93,24 +111,43 @@ wss.on('connection', (ws) => {
       case 'join': {
         const roomName = (data.room || 'geral').trim().toLowerCase();
         const userName = (data.userName || 'Anônimo').trim();
+        const inputPin = (data.pin || '').trim();
         const peerId = data.peerId || generateId();
 
         if (ws.roomName) {
           removePeerFromRoom(ws);
         }
 
+        let roomData = rooms.get(roomName);
+
+        // Se a sala já existe e tem senha configurada, valida o PIN
+        if (roomData) {
+          if (roomData.pin && roomData.pin !== inputPin) {
+            console.log(`[Sala: ${roomName}] PIN incorreto digitado por: ${userName}`);
+            sendJSON(ws, {
+              type: 'join-error',
+              message: 'Senha/PIN incorreto para esta sala!'
+            });
+            return;
+          }
+        } else {
+          // Cria nova sala com ou sem PIN
+          roomData = {
+            pin: inputPin.length > 0 ? inputPin : null,
+            peers: new Map()
+          };
+          rooms.set(roomName, roomData);
+          if (roomData.pin) {
+            console.log(`[Sala: ${roomName}] Sala criada com senha/PIN`);
+          }
+        }
+
         ws.peerId = peerId;
         ws.roomName = roomName;
         ws.userName = userName;
 
-        if (!rooms.has(roomName)) {
-          rooms.set(roomName, new Map());
-        }
-
-        const roomPeers = rooms.get(roomName);
         const existingPeers = [];
-
-        roomPeers.forEach((client, existingId) => {
+        roomData.peers.forEach((client, existingId) => {
           existingPeers.push({
             peerId: existingId,
             userName: client.userName,
@@ -118,20 +155,21 @@ wss.on('connection', (ws) => {
           });
         });
 
-        roomPeers.set(peerId, {
+        roomData.peers.set(peerId, {
           ws,
           peerId,
           userName,
           status: data.status || { isAudioMuted: false, isVideoMuted: false, isScreenSharing: false }
         });
 
-        console.log(`[Sala: ${roomName}] "${userName}" (${peerId}) entrou. Total: ${roomPeers.size}`);
+        console.log(`[Sala: ${roomName}] "${userName}" (${peerId}) entrou. Total: ${roomData.peers.size}`);
 
         sendJSON(ws, {
           type: 'room-joined',
           room: roomName,
           peerId,
           userName,
+          hasPin: !!roomData.pin,
           peers: existingPeers
         });
 
@@ -152,9 +190,9 @@ wss.on('connection', (ws) => {
 
         if (!roomName || !senderPeerId || !targetPeerId) return;
 
-        const roomPeers = rooms.get(roomName);
-        if (roomPeers && roomPeers.has(targetPeerId)) {
-          const targetClient = roomPeers.get(targetPeerId);
+        const roomData = rooms.get(roomName);
+        if (roomData && roomData.peers && roomData.peers.has(targetPeerId)) {
+          const targetClient = roomData.peers.get(targetPeerId);
           sendJSON(targetClient.ws, {
             type: 'signal',
             fromPeerId: senderPeerId,
@@ -170,9 +208,9 @@ wss.on('connection', (ws) => {
         const peerId = ws.peerId;
         if (!roomName || !peerId) return;
 
-        const roomPeers = rooms.get(roomName);
-        if (roomPeers && roomPeers.has(peerId)) {
-          const client = roomPeers.get(peerId);
+        const roomData = rooms.get(roomName);
+        if (roomData && roomData.peers && roomData.peers.has(peerId)) {
+          const client = roomData.peers.get(peerId);
           client.status = { ...client.status, ...data.status };
 
           broadcastToRoom(roomName, {
@@ -230,8 +268,8 @@ wss.on('close', () => {
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`====================================================`);
-  console.log(`🚀 Servidor WebRTC Rodando!`);
+  console.log(`🚀 Servidor WebRTC Rodando na porta ${PORT}!`);
   console.log(`🌐 Acesse no navegador: http://localhost:${PORT}`);
-  console.log(`📡 WebSocket de sinalização ativo na mesma porta`);
+  console.log(`📡 WebSocket de sinalização ativo com suporte a PIN`);
   console.log(`====================================================`);
 });
