@@ -27,7 +27,12 @@ const indexPath = hasPublicDir
 
 app.use(express.static(publicPath));
 
-app.get('*', (req, res) => {
+// Entrega do index.html compatível com Node.js v20, v22 e v24
+app.get('/', (req, res) => {
+  res.sendFile(indexPath);
+});
+
+app.use((req, res) => {
   res.sendFile(indexPath);
 });
 
@@ -269,7 +274,5 @@ wss.on('close', () => {
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`====================================================`);
   console.log(`🚀 Servidor WebRTC Rodando na porta ${PORT}!`);
-  console.log(`🌐 Acesse no navegador: http://localhost:${PORT}`);
-  console.log(`📡 WebSocket de sinalização ativo com suporte a PIN`);
   console.log(`====================================================`);
 });
